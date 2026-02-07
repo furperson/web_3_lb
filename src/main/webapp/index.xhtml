@@ -17,7 +17,7 @@
     </div>
 
     <h:form id="clockForm">
-        <h:outputText id="clock" value="#{currentDate}" styleClass="clock">
+        <h:outputText id="clock" value="#{clockBean.getNow()}" styleClass="clock">
             <f:convertDateTime pattern="HH:mm:ss" type="date" xmlns:f="http://xmlns.jcp.org/jsf/core"/>
         </h:outputText>
 
