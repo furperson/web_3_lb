@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+<h:head>
+    <title>Проверка точки</title>
+    <h:outputScript library="js" name="graph.js" />
+</h:head>
+<h:body>
+    <h:form id="mainForm">
+        <p:growl id="growl" showDetail="true" />
+
+        <p:remoteCommand name="sendGraphClick"
+                         action="#{mainBean.addGraphResult}"
+                         update="resultTable growl drawPanel"
+                         process="@this" />
+
+        <div style="display: flex; justify-content: space-around; padding: 20px;">
+            <div>
+                <canvas id="graphCanvas" width="300" height="300"
+                        style="border:1px solid #000; cursor:pointer; background: #fff;"
+                        onclick="handleCanvasClick(event)"></canvas>
+            </div>
+
+            <p:panel header="Параметры" style="width: 450px;">
+                <h:panelGrid columns="2" cellpadding="5">
+                    <p:outputLabel for="xVal" value="X:" />
+                    <p:selectOneRadio id="xVal" value="#{mainBean.x}">
+                        <f:selectItem itemLabel="-5" itemValue="-5" />
+                        <f:selectItem itemLabel="-4" itemValue="-4" />
+                        <f:selectItem itemLabel="-3" itemValue="-3" />
+                        <f:selectItem itemLabel="-2" itemValue="-2" />
+                        <f:selectItem itemLabel="-1" itemValue="-1" />
+                        <f:selectItem itemLabel="0" itemValue="0" />
+                        <f:selectItem itemLabel="1" itemValue="1" />
+                        <f:selectItem itemLabel="2" itemValue="2" />
+                        <f:selectItem itemLabel="3" itemValue="3" />
+                    </p:selectOneRadio>
+
+                    <p:outputLabel for="yVal" value="Y:" />
+                    <h:panelGroup>
+                        <p:inputText id="yVal" value="#{mainBean.y}" required="true"
+                                     requiredMessage="Поле Y обязательно"
+                                     converterMessage="Y должно быть числом">
+                            <f:validateDoubleRange minimum="-3" maximum="5" />
+                        </p:inputText>
+                        <p:watermark for="yVal" value="(-3 ... 5)" />
+                    </h:panelGroup>
+
+                    <p:outputLabel for="rVal" value="R:" />
+                    <p:selectOneRadio id="rVal" value="#{mainBean.r}">
+                        <f:selectItem itemLabel="1" itemValue="1" />
+                        <f:selectItem itemLabel="2" itemValue="2" />
+                        <f:selectItem itemLabel="3" itemValue="3" />
+                        <f:selectItem itemLabel="4" itemValue="4" />
+                        <f:selectItem itemLabel="5" itemValue="5" />
+                        <p:ajax event="change" update="drawPanel" />
+                    </p:selectOneRadio>
+                </h:panelGrid>
+
+                <p:separator />
+
+                <p:commandButton value="Проверить"
+                                 action="#{mainBean.addFormResult}"
+                                 update="resultTable growl drawPanel"
+                                 icon="pi pi-check" />
+                <p:commandButton value="Очистить"
+                                 action="#{mainBean.clearResults}"
+                                 process="@this"
+                                 update="resultTable growl drawPanel"
+                                 styleClass="ui-button-danger"
+                                 icon="pi pi-trash"
+                                 style="margin-left: 10px;" />
+            </p:panel>
+        </div>
+
+        <p:dataTable id="resultTable" var="res" value="#{mainBean.results}"
+                     paginator="true" rows="5"
+                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                     rowsPerPageTemplate="5,10,15"
+                     style="margin-top: 20px;">
+
+            <p:column headerText="X">
+                <h:outputText value="#{res.x}"><f:convertNumber maxFractionDigits="3" /></h:outputText>
+            </p:column>
+            <p:column headerText="Y">
+                <h:outputText value="#{res.y}"><f:convertNumber maxFractionDigits="3" /></h:outputText>
+            </p:column>
+            <p:column headerText="R">
+                <h:outputText value="#{res.r}" />
+            </p:column>
+            <p:column headerText="Результат">
+                <h:outputText value="#{res.hit ? 'Попадание' : 'Промах'}"
+                              style="color: #{res.hit ? 'green' : 'red'}; font-weight: bold;" />
+            </p:column>
+
+            <p:column headerText="время выполнения">
+                <h:outputText value="#{res.executionTime}" />
+            </p:column>
+
+            <p:column headerText="время на сервере (по мск)">
+                <h:outputText value="#{res.queryTime}" />
+            </p:column>
+        </p:dataTable>
+
+        <h:panelGroup id="drawPanel">
+            <script>
+                window.currentR = #{mainBean.r};
+                drawGraph(window.currentR, #{mainBean.resultsJson});
+            </script>
+        </h:panelGroup>
+
+        <br/>
+        <h:link outcome="goToIndex" value="На главную" />
+    </h:form>
+</h:body>
+</html>
